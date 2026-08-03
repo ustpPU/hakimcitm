@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borang Pemarkahan Cetusan Inspirasi 3 Minit</title>
+    <!-- Tailwind CSS & SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-slate-50 font-sans min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white text-center py-6 px-4 shadow-md">
+        <p class="text-xs md:text-sm font-semibold tracking-wider text-indigo-200">KEMENTERIAN PENDIDIKAN | PPD PETALING UTAMA</p>
+        <h1 class="text-xl md:text-2xl font-black mt-1">PERTANDINGAN CETUSAN INSPIRASI 3 MINIT (BERSEMUKA)</h1>
+        <p class="text-xs md:text-sm bg-indigo-800 inline-block px-3 py-1 rounded-full mt-2 font-medium">PUICE 2025 / 2026</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto mt-6 px-4">
+        
+        <!-- Tab Navigasi -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <button id="btn-pengisian" onclick="tukarTab('pengisian')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-indigo-600 text-white border-2 border-indigo-600 cursor-pointer">
+                📝 Pengisian Markah
+            </button>
+            <button id="btn-jumlah" onclick="tukarTab('jumlah')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-white text-gray-700 border-2 border-gray-200 hover:border-indigo-300 cursor-pointer">
+                📊 Senarai Keputusan Markah
+            </button>
+        </div>
+
+        <!-- TAB 1: PENGISIAN MARKAH -->
+        <section id="tab-pengisian" class="block space-y-6">
+            <!-- Maklumat Peserta & Hakim -->
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-4">
+                <h2 class="text-md font-bold text-indigo-900 border-b pb-2">1. Pilih Hakim & Peserta</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dropdown Hakim (Hardcoded Dummy) -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nama Hakim / Penilai *</label>
+                        <select id="nama-hakim" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
+                            <option value="">-- Pilih Hakim --</option>
+                            <option value="Hakim 1 - Dr. Ahmad (Dummy)">Hakim 1 - Dr. Ahmad</option>
+                            <option value="Hakim 2 - Pn. Siti (Dummy)">Hakim 2 - Pn. Siti</option>
+                            <option value="Hakim 3 - En. Hafiz (Dummy)">Hakim 3 - En. Hafiz</option>
+                            <option value="Hakim 4 - Pn. Wong (Dummy)">Hakim 4 - Pn. Wong</option>
+                        </select>
+                    </div>
+
+                    <!-- Dropdown Peserta (Dinamik dari Cloud) -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Pilih Nama Guru (Peserta) *</label>
+                        <select id="select-peserta" onchange="pilihPeserta()" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
+                            <option value="">-- Sedang memuatkan senarai peserta... --</option>
+                        </select>
+                    </div>
+
+                    <!-- Auto-filled Field: Sekolah -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Sekolah Bertugas</label>
+                        <input type="text" id="sekolah" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 cursor-not-allowed">
+                    </div>
+
+                    <!-- Field: Mata Pelajaran (Manual jika tiada dalam senarai) -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Mata Pelajaran & Tahun / Tingkatan *</label>
+                        <input type="text" id="subjek" placeholder="Contoh: Sains (Tahun 5)" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none">
+                    </div>
+
+                    <!-- Auto-filled Field: Tajuk Inovasi -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Tajuk Pembentangan / Inovasi</label>
+                        <input type="text" id="tajuk" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 font-medium cursor-not-allowed">
+                    </div>
+
+                    <!-- Info Tag: Pernah Bertanding -->
+                    <div class="md:col-span-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-100 p-2.5 rounded-lg border border-slate-200">
+                        <span class="font-bold uppercase text-slate-800">Status Pengalaman:</span>
+                        <span id="info-pernah-bertanding" class="font-semibold text-indigo-700">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rubrik Pemarkahan -->
+            <form id="borang-markah" class="space-y-6">
+                
+                <!-- A. KESESUAIAN IDEA / INOVASI (25%) -->
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-blue-50 px-6 py-3 border-b border-blue-100 flex justify-between items-center">
+                        <h3 class="font-bold text-blue-900 text-sm">A. KESESUAIAN IDEA / INOVASI</h3>
+                        <span class="text-xs bg-blue-200 text-blue-800 font-bold px-2.5 py-1 rounded-full">25% (Skor 1-5)</span>
+                    </div>
+                    <div class="p-4 divide-y divide-gray-100 text-sm">
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>1.1 Idea yang kreatif</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="A" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>1.2 Berfokus kepada objektif inovasi</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="A" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>1.3 Pendekatan P&P yang kreatif</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="A" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>1.4 Relevan dengan keperluan semasa</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="A" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>1.5 Inovasi yang menarik perhatian</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="A" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                    </div>
+                </div>
+
+                <!-- B. KEBOLEHLAKSANAAN IDEA / INOVASI PDP (15%) -->
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-emerald-50 px-6 py-3 border-b border-emerald-100 flex justify-between items-center">
+                        <h3 class="font-bold text-emerald-900 text-sm">B. KEBOLEHLAKSANAAN IDEA / INOVASI PDP</h3>
+                        <span class="text-xs bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-full">15% (Skor 1-5)</span>
+                    </div>
+                    <div class="p-4 divide-y divide-gray-100 text-sm">
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.1 Jelas</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.2 Kemas dan teratur</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.3 Mesra pengguna, kepelbagaian guna & mesra alam</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                    </div>
+                </div>
+
+                <!-- C. KEBERKESANAN IDEA / INOVASI PDP (15%) -->
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-purple-50 px-6 py-3 border-b border-purple-100 flex justify-between items-center">
+                        <h3 class="font-bold text-purple-900 text-sm">C. KEBERKESANAN IDEA / INOVASI PDP</h3>
+                        <span class="text-xs bg-purple-200 text-purple-800 font-bold px-2.5 py-1 rounded-full">15% (Skor 1-5)</span>
+                    </div>
+                    <div class="p-4 divide-y divide-gray-100 text-sm">
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>3.1 Hasil inovasi memudahkan guru untuk mengajar</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="C" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>3.2 Hasil inovasi berupaya menjimatkan masa guru mengajar</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="C" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>3.3 Hasil inovasi meningkatkan keyakinan guru untuk mengajar</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="C" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                    </div>
+                </div>
+
+                <!-- D. PENYAMPAIAN 3-MINUTE PDP PITCHING (35%) -->
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-amber-50 px-6 py-3 border-b border-amber-100 flex justify-between items-center">
+                        <h3 class="font-bold text-amber-900 text-sm">D. PENYAMPAIAN 3-MINUTE PDP PITCHING</h3>
+                        <span class="text-xs bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-full">35% (Skor 1-5)</span>
+                    </div>
+                    <div class="p-4 divide-y divide-gray-100 text-sm">
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.1 Mampu memberi kefahaman optimum kepada murid</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.2 Menarik minat murid terhadap mata pelajaran yang diajar</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.3 Melibatkan murid secara aktif dalam pembelajaran</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.4 Meningkatkan prestasi murid</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.5 Murid mampu mengaplikasikan inovasi ini dalam mata pelajaran lain</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.6 Persembahan pitching lancar, berkeyakinan dan tepat masa (3 minit)</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.7 Penggunaan bahan/slaid bantuan pitching yang berkesan</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                    </div>
+                </div>
+
+                <!-- E. POTENSI IDEA / INOVASI DISEBARLUASKAN (10%) -->
+                <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                    <div class="bg-rose-50 px-6 py-3 border-b border-rose-100 flex justify-between items-center">
+                        <h3 class="font-bold text-rose-900 text-sm">E. POTENSI IDEA / INOVASI DISEBARLUASKAN</h3>
+                        <span class="text-xs bg-rose-200 text-rose-800 font-bold px-2.5 py-1 rounded-full">10% (Skor 1-5)</span>
+                    </div>
+                    <div class="p-4 divide-y divide-gray-100 text-sm">
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>5.1 Disebarluas kepada guru di sekolah calon</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="E" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>5.2 Disebarluas kepada guru di sekolah lain</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="E" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                    </div>
+                </div>
+
+                <!-- CATATAN / KOMEN HAKIM -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-4">
+                    <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Catatan / Komen Hakim</label>
+                    <textarea id="catatan" rows="3" placeholder="Masukkan ulasan atau komen penambahbaikan untuk calon..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none"></textarea>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="bg-gray-900 text-white p-4 rounded-xl flex justify-between items-center shadow-md">
+                    <div>
+                        <span class="text-xs text-gray-400 font-bold block">JUMLAH SKOR KESELURUHAN</span>
+                        <span id="live-total" class="text-3xl font-black text-amber-400">0 <span class="text-sm font-normal text-white">/ 100</span></span>
+                    </div>
+                    <button type="button" onclick="hantarMarkah()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center gap-2 shadow-lg">
+                        ☁️ Simpan Markah
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- TAB 2: KEPUTUSAN MARKAH TERKUMPUL -->
+        <section id="tab-jumlah" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+                <div class="flex justify-between items-center border-b pb-4 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">Senarai Keputusan Pemarkahan Calon</h2>
+                        <p class="text-xs text-gray-500">Ringkasan markah yang telah dihantar oleh para hakim</p>
+                    </div>
+                    <button onclick="muatTurunData()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                        🔄 Muat Semula
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
+                                <th class="p-3">Calon & Sekolah</th>
+                                <th class="p-3">Tajuk Inovasi</th>
+                                <th class="p-3 text-center">Hakim</th>
+                                <th class="p-3 text-right">Jumlah Markah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jadual-body" class="divide-y divide-gray-100">
+                            <!-- Data dimasukkan secara dinamik -->
+                        </tbody>
+                    </table>
+                    <div id="loading-txt" class="text-center py-8 text-gray-400 text-sm">
+                        Sedang mengambil data dari Cloud...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // ⚠️ GANTIKAN DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS3btPzsRFMttIRcn5fdA_Lc21n60ISus4XVPjvY30qXgmxgorSqVdBlu7ssfbM_9PHg/exec";
+
+        let senaraiPesertaGlobal = [];
+
+        window.onload = function() {
+            muatAwalPeserta();
+        };
+
+        function muatAwalPeserta() {
+            fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                const selectPeserta = document.getElementById('select-peserta');
+                selectPeserta.innerHTML = `<option value="">-- Pilih Nama Guru --</option>`;
+
+                if (data.participants && data.participants.length > 0) {
+                    senaraiPesertaGlobal = data.participants;
+                    data.participants.forEach((p, idx) => {
+                        let opt = document.createElement('option');
+                        opt.value = idx;
+                        opt.textContent = `${p.namaGuru} (${p.sekolah})`;
+                        selectPeserta.appendChild(opt);
+                    });
+                } else {
+                    selectPeserta.innerHTML = `<option value="">⚠️ Tiada data peserta dalam tab SENARAIPESERTA</option>`;
+                }
+            })
+            .catch(err => {
+                console.error("Gagal muat data peserta:", err);
+                document.getElementById('select-peserta').innerHTML = `<option value="">Gagal muat data. Semak sambungan internet.</option>`;
+            });
+        }
+
+        function pilihPeserta() {
+            const idx = document.getElementById('select-peserta').value;
+            if (idx === "") {
+                document.getElementById('sekolah').value = "";
+                document.getElementById('tajuk').value = "";
+                document.getElementById('info-pernah-bertanding').textContent = "-";
+                return;
+            }
+
+            const p = senaraiPesertaGlobal[idx];
+            document.getElementById('sekolah').value = p.sekolah || "";
+            document.getElementById('tajuk').value = p.tajuk || "";
+            document.getElementById('info-pernah-bertanding').textContent = p.pernahBertanding || "Tidak dinyatakan";
+        }
+
+        function tukarTab(tab) {
+            const tabPengisian = document.getElementById('tab-pengisian');
+            const tabJumlah = document.getElementById('tab-jumlah');
+            const btnPengisian = document.getElementById('btn-pengisian');
+            const btnJumlah = document.getElementById('btn-jumlah');
+
+            if(tab === 'pengisian') {
+                tabPengisian.className = "block space-y-6";
+                tabJumlah.className = "hidden";
+                btnPengisian.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-indigo-600 text-white border-2 border-indigo-600";
+                btnJumlah.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-white text-gray-700 border-2 border-gray-200";
+            } else {
+                tabPengisian.className = "hidden";
+                tabJumlah.className = "block space-y-6";
+                btnJumlah.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-indigo-600 text-white border-2 border-indigo-600";
+                btnPengisian.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-white text-gray-700 border-2 border-gray-200";
+                muatTurunData();
+            }
+        }
+
+        function kiraSkor() {
+            const inputs = document.querySelectorAll('.skor-input');
+            let grandTotal = 0;
+
+            inputs.forEach(input => {
+                let val = parseFloat(input.value) || 0;
+                if (val > 5) { input.value = 5; val = 5; }
+                if (val < 0) { input.value = 0; val = 0; }
+                grandTotal += val;
+            });
+
+            document.getElementById('live-total').innerHTML = grandTotal + ` <span class="text-sm font-normal text-white">/ 100</span>`;
+            return grandTotal;
+        }
+
+        function hantarMarkah() {
+            const hakim = document.getElementById('nama-hakim').value;
+            const idxPeserta = document.getElementById('select-peserta').value;
+            const subjek = document.getElementById('subjek').value.trim();
+            const catatan = document.getElementById('catatan').value.trim();
+
+            if (!hakim || idxPeserta === "" || !subjek) {
+                Swal.fire({ icon: 'warning', title: 'Maklumat Tidak Lengkap', text: 'Sila pilih Hakim, Nama Guru, dan isi Mata Pelajaran terlebih dahulu!', confirmButtonColor: '#4f46e5' });
+                return;
+            }
+
+            const peserta = senaraiPesertaGlobal[idxPeserta];
+
+            let cats = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+            document.querySelectorAll('.skor-input').forEach(i => {
+                let c = i.getAttribute('data-cat');
+                cats[c] = (cats[c] || 0) + (parseFloat(i.value) || 0);
+            });
+
+            const payload = {
+                hakim: hakim,
+                namaGuru: peserta.namaGuru,
+                sekolah: peserta.sekolah,
+                subjek: subjek,
+                tajuk: peserta.tajuk,
+                skorA: cats.A,
+                skorB: cats.B,
+                skorC: cats.C,
+                skorD: cats.D,
+                skorE: cats.E,
+                jumlah: kiraSkor(),
+                catatan: catatan
+            };
+
+            Swal.fire({
+                title: 'Menghantar Markah...',
+                text: 'Sila tunggu sebentar, data sedang disimpan ke Cloud Google Sheets.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Markah Berjaya Dihantar!',
+                    text: `Markah untuk calon ${peserta.namaGuru} telah selamat disimpan.`,
+                    confirmButtonText: 'Lihat Senarai Keputusan',
+                    confirmButtonColor: '#16a34a'
+                }).then(() => {
+                    document.getElementById('borang-markah').reset();
+                    document.getElementById('select-peserta').value = "";
+                    pilihPeserta();
+                    kiraSkor();
+                    tukarTab('jumlah');
+                });
+            })
+            .catch(err => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Dihantar!',
+                    text: 'Sila semak sambungan rangkaian internet anda.',
+                    confirmButtonColor: '#dc2626'
+                });
+            });
+        }
+
+        function muatTurunData() {
+            const tbody = document.getElementById('jadual-body');
+            const loading = document.getElementById('loading-txt');
+            tbody.innerHTML = '';
+            loading.style.display = 'block';
+
+            fetch(GOOGLE_SCRIPT_URL)
+            .then(res => res.json())
+            .then(resData => {
+                loading.style.display = 'none';
+
+                const data = resData.scores || [];
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">Tiada rekod markah ditemui.</td></tr>`;
+                    return;
+                }
+
+                data.sort((a, b) => (parseFloat(b.jumlah) || 0) - (parseFloat(a.jumlah) || 0));
+
+                data.forEach((item) => {
+                    let tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 border-b border-gray-100";
+                    tr.innerHTML = `
+                        <td class="p-3">
+                            <div class="font-bold text-gray-900">${item.namaGuru}</div>
+                            <div class="text-xs text-gray-500">${item.sekolah} • ${item.subjek}</div>
+                        </td>
+                        <td class="p-3 text-xs text-gray-700 font-medium">${item.tajuk}</td>
+                        <td class="p-3 text-center text-xs font-semibold text-indigo-700 bg-indigo-50/50 rounded-lg">${item.hakim}</td>
+                        <td class="p-3 text-right font-black text-emerald-700 text-base">${item.jumlah} <span class="text-xs font-normal text-gray-400">/ 100</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => {
+                loading.innerText = "Gagal memuat turun data. Sila semak sambungan internet atau URL Apps Script anda.";
+            });
+        }
+    </script>
+</body>
+</html>
