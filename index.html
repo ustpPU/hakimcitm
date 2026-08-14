@@ -36,19 +36,18 @@
                 <h2 class="text-md font-bold text-indigo-900 border-b pb-2">1. Pilih Hakim & Peserta</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Dropdown Hakim (Hardcoded Dummy) -->
+                    <!-- Dropdown Hakim -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nama Hakim / Penilai *</label>
                         <select id="nama-hakim" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
                             <option value="">-- Pilih Hakim --</option>
-                            <option value="Hakim 1 - Dr. Ahmad (Dummy)">Hakim 1 - Dr. Ahmad</option>
-                            <option value="Hakim 2 - Pn. Siti (Dummy)">Hakim 2 - Pn. Siti</option>
-                            <option value="Hakim 3 - En. Hafiz (Dummy)">Hakim 3 - En. Hafiz</option>
-                            <option value="Hakim 4 - Pn. Wong (Dummy)">Hakim 4 - Pn. Wong</option>
+                            <option value="Hakim 1">Hakim 1</option>
+                            <option value="Hakim 2">Hakim 2</option>
+                            <option value="Hakim 3">Hakim 3</option>
                         </select>
                     </div>
 
-                    <!-- Dropdown Peserta (Dinamik dari Cloud) -->
+                    <!-- Dropdown Peserta -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Pilih Nama Guru (Peserta) *</label>
                         <select id="select-peserta" onchange="pilihPeserta()" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
@@ -56,19 +55,25 @@
                         </select>
                     </div>
 
-                    <!-- Auto-filled Field: Sekolah -->
+                    <!-- Auto-filled: Kategori -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Kategori</label>
+                        <input type="text" id="kategori" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 cursor-not-allowed font-semibold">
+                    </div>
+
+                    <!-- Auto-filled: Sekolah -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Sekolah Bertugas</label>
                         <input type="text" id="sekolah" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 cursor-not-allowed">
                     </div>
 
-                    <!-- Field: Mata Pelajaran (Manual jika tiada dalam senarai) -->
-                    <div>
+                    <!-- Input Manual: Mata Pelajaran -->
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Mata Pelajaran & Tahun / Tingkatan *</label>
                         <input type="text" id="subjek" placeholder="Contoh: Sains (Tahun 5)" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none">
                     </div>
 
-                    <!-- Auto-filled Field: Tajuk Inovasi -->
+                    <!-- Auto-filled: Tajuk Inovasi -->
                     <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Tajuk Pembentangan / Inovasi</label>
                         <input type="text" id="tajuk" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 font-medium cursor-not-allowed">
@@ -100,16 +105,18 @@
                     </div>
                 </div>
 
-                <!-- B. KEBOLEHLAKSANAAN IDEA / INOVASI PDP (15%) -->
+                <!-- B. KEBOLEHLAKSANAAN IDEA / INOVASI PDP (25%) -->
                 <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                     <div class="bg-emerald-50 px-6 py-3 border-b border-emerald-100 flex justify-between items-center">
                         <h3 class="font-bold text-emerald-900 text-sm">B. KEBOLEHLAKSANAAN IDEA / INOVASI PDP</h3>
-                        <span class="text-xs bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-full">15% (Skor 1-5)</span>
+                        <span class="text-xs bg-emerald-200 text-emerald-800 font-bold px-2.5 py-1 rounded-full">25% (Skor 1-5)</span>
                     </div>
                     <div class="p-4 divide-y divide-gray-100 text-sm">
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>2.1 Jelas</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>2.2 Kemas dan teratur</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
-                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.3 Mesra pengguna, kepelbagaian guna & mesra alam</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.3 Mesra pengguna</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.4 Kepelbagaian guna</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
+                        <div class="py-2.5 flex justify-between items-center gap-2"><span>2.5 Mesra alam</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="B" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
                     </div>
                 </div>
 
@@ -126,11 +133,11 @@
                     </div>
                 </div>
 
-                <!-- D. PENYAMPAIAN 3-MINUTE PDP PITCHING (35%) -->
+                <!-- D. PENYAMPAIAN 3-MINUTE PDP PITCHING (25%) -->
                 <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                     <div class="bg-amber-50 px-6 py-3 border-b border-amber-100 flex justify-between items-center">
                         <h3 class="font-bold text-amber-900 text-sm">D. PENYAMPAIAN 3-MINUTE PDP PITCHING</h3>
-                        <span class="text-xs bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-full">35% (Skor 1-5)</span>
+                        <span class="text-xs bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-full">25% (Skor 1-5)</span>
                     </div>
                     <div class="p-4 divide-y divide-gray-100 text-sm">
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>4.1 Mampu memberi kefahaman optimum kepada murid</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
@@ -138,8 +145,6 @@
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>4.3 Melibatkan murid secara aktif dalam pembelajaran</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>4.4 Meningkatkan prestasi murid</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
                         <div class="py-2.5 flex justify-between items-center gap-2"><span>4.5 Murid mampu mengaplikasikan inovasi ini dalam mata pelajaran lain</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
-                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.6 Persembahan pitching lancar, berkeyakinan dan tepat masa (3 minit)</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
-                        <div class="py-2.5 flex justify-between items-center gap-2"><span>4.7 Penggunaan bahan/slaid bantuan pitching yang berkesan</span><input type="number" min="1" max="5" oninput="kiraSkor()" data-cat="D" class="skor-input w-16 p-2 text-center border rounded-lg font-bold" placeholder="1-5"></div>
                     </div>
                 </div>
 
@@ -158,7 +163,7 @@
                 <!-- CATATAN / KOMEN HAKIM -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-4">
                     <label class="block text-xs font-bold text-gray-700 uppercase mb-2">Catatan / Komen Hakim</label>
-                    <textarea id="catatan" rows="3" placeholder="Masukkan ulasan atau komen penambahbaikan untuk calon..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none"></textarea>
+                    <textarea id="catatan" rows="3" placeholder="Masukkan ulasan atau komen penambahbaikan..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none"></textarea>
                 </div>
 
                 <!-- Action Bar -->
@@ -180,7 +185,7 @@
                 <div class="flex justify-between items-center border-b pb-4 mb-4">
                     <div>
                         <h2 class="text-lg font-bold text-gray-800">Senarai Keputusan Pemarkahan Calon</h2>
-                        <p class="text-xs text-gray-500">Ringkasan markah yang telah dihantar oleh para hakim</p>
+                        <p class="text-xs text-gray-500">Ringkasan markah yang telah dihantar oleh 3 orang hakim</p>
                     </div>
                     <button onclick="muatTurunData()" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer">
                         🔄 Muat Semula
@@ -191,10 +196,12 @@
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
-                                <th class="p-3">Calon & Sekolah</th>
-                                <th class="p-3">Tajuk Inovasi</th>
-                                <th class="p-3 text-center">Hakim</th>
-                                <th class="p-3 text-right">Jumlah Markah</th>
+                                <th class="p-3 w-1/4">Calon & Sekolah</th>
+                                <th class="p-3 w-1/4">Tajuk Inovasi</th>
+                                <th class="p-3 text-center">Hakim 1</th>
+                                <th class="p-3 text-center">Hakim 2</th>
+                                <th class="p-3 text-center">Hakim 3</th>
+                                <th class="p-3 text-right">Jumlah (300)</th>
                             </tr>
                         </thead>
                         <tbody id="jadual-body" class="divide-y divide-gray-100">
@@ -212,7 +219,7 @@
 
     <script>
         // ⚠️ GANTIKAN DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyS3btPzsRFMttIRcn5fdA_Lc21n60ISus4XVPjvY30qXgmxgorSqVdBlu7ssfbM_9PHg/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyotFVCx4SqBXo93JvM-zP2W-aIcsEnP38OZrV-5yLuorhc-tYu8xuSH8c3hGKb-zDfnw/exec";
 
         let senaraiPesertaGlobal = [];
 
@@ -249,6 +256,7 @@
             const idx = document.getElementById('select-peserta').value;
             if (idx === "") {
                 document.getElementById('sekolah').value = "";
+                document.getElementById('kategori').value = "";
                 document.getElementById('tajuk').value = "";
                 document.getElementById('info-pernah-bertanding').textContent = "-";
                 return;
@@ -256,6 +264,7 @@
 
             const p = senaraiPesertaGlobal[idx];
             document.getElementById('sekolah').value = p.sekolah || "";
+            document.getElementById('kategori').value = p.kategori || "";
             document.getElementById('tajuk').value = p.tajuk || "";
             document.getElementById('info-pernah-bertanding').textContent = p.pernahBertanding || "Tidak dinyatakan";
         }
@@ -318,6 +327,7 @@
                 hakim: hakim,
                 namaGuru: peserta.namaGuru,
                 sekolah: peserta.sekolah,
+                kategori: peserta.kategori,
                 subjek: subjek,
                 tajuk: peserta.tajuk,
                 skorA: cats.A,
@@ -378,26 +388,61 @@
             .then(resData => {
                 loading.style.display = 'none';
 
-                const data = resData.scores || [];
+                const rawData = resData.scores || [];
 
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">Tiada rekod markah ditemui.</td></tr>`;
+                if (rawData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Tiada rekod markah ditemui.</td></tr>`;
                     return;
                 }
 
-                data.sort((a, b) => (parseFloat(b.jumlah) || 0) - (parseFloat(a.jumlah) || 0));
+                // 1. Kumpulkan Data (Grouping) mengikut Nama Guru
+                let senaraiTerkumpul = {};
+                
+                rawData.forEach(item => {
+                    let nama = item.namaGuru;
+                    
+                    if (!senaraiTerkumpul[nama]) {
+                        senaraiTerkumpul[nama] = {
+                            namaGuru: nama,
+                            sekolah: item.sekolah,
+                            tajuk: item.tajuk,
+                            markahHakim: [],
+                            jumlahKeseluruhan: 0
+                        };
+                    }
+                    
+                    senaraiTerkumpul[nama].markahHakim.push({
+                        namaHakim: item.hakim,
+                        markah: parseFloat(item.jumlah) || 0
+                    });
+                    
+                    senaraiTerkumpul[nama].jumlahKeseluruhan += (parseFloat(item.jumlah) || 0);
+                });
 
-                data.forEach((item) => {
+                // 2. Susun ikut Jumlah Keseluruhan Tertinggi
+                let arrayKeputusan = Object.values(senaraiTerkumpul);
+                arrayKeputusan.sort((a, b) => b.jumlahKeseluruhan - a.jumlahKeseluruhan);
+
+                // 3. Masukkan data ke dalam jadual
+                arrayKeputusan.forEach((item) => {
+                    let h1 = item.markahHakim[0] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[0].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[0].markah}</div>` : `<span class="text-gray-300">-</span>`;
+                    
+                    let h2 = item.markahHakim[1] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[1].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[1].markah}</div>` : `<span class="text-gray-300">-</span>`;
+                    
+                    let h3 = item.markahHakim[2] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[2].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[2].markah}</div>` : `<span class="text-gray-300">-</span>`;
+
                     let tr = document.createElement('tr');
                     tr.className = "hover:bg-gray-50 border-b border-gray-100";
                     tr.innerHTML = `
                         <td class="p-3">
                             <div class="font-bold text-gray-900">${item.namaGuru}</div>
-                            <div class="text-xs text-gray-500">${item.sekolah} • ${item.subjek}</div>
+                            <div class="text-xs text-gray-500">${item.sekolah}</div>
                         </td>
                         <td class="p-3 text-xs text-gray-700 font-medium">${item.tajuk}</td>
-                        <td class="p-3 text-center text-xs font-semibold text-indigo-700 bg-indigo-50/50 rounded-lg">${item.hakim}</td>
-                        <td class="p-3 text-right font-black text-emerald-700 text-base">${item.jumlah} <span class="text-xs font-normal text-gray-400">/ 100</span></td>
+                        <td class="p-2 text-center bg-indigo-50/40 rounded-l-lg border-l border-white">${h1}</td>
+                        <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${h2}</td>
+                        <td class="p-2 text-center bg-indigo-50/40 rounded-r-lg border-l border-white">${h3}</td>
+                        <td class="p-3 text-right font-black text-emerald-700 text-lg">${item.jumlahKeseluruhan} <span class="text-xs font-normal text-gray-400">/ 300</span></td>
                     `;
                     tbody.appendChild(tr);
                 });
