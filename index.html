@@ -196,7 +196,7 @@
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
-                                <th class="p-3 text-center">Kedudukan / Anugerah</th>
+                                <th class="p-3 text-center">Kedudukan</th>
                                 <th class="p-3 w-1/4">Calon & Sekolah</th>
                                 <th class="p-3 w-1/4">Tajuk Inovasi</th>
                                 <th id="header-hakim-1" class="p-3 text-center">Hakim 1</th>
@@ -231,8 +231,54 @@
         let rekodMarkahGlobal = [];
 
         window.onload = function() {
+            binaButangSkor();
             muatAwalPeserta();
         };
+
+        function binaButangSkor() {
+            document.querySelectorAll('.skor-input').forEach((input, index) => {
+                input.type = 'hidden';
+                input.removeAttribute('placeholder');
+                input.parentElement.classList.add('flex-wrap');
+
+                const kumpulan = document.createElement('div');
+                kumpulan.className = 'grid grid-cols-5 gap-1.5 w-full sm:w-auto';
+                kumpulan.setAttribute('role', 'group');
+                kumpulan.setAttribute('aria-label', `Pilihan skor kriteria ${index + 1}`);
+
+                for (let nilai = 1; nilai <= 5; nilai++) {
+                    const butang = document.createElement('button');
+                    butang.type = 'button';
+                    butang.textContent = nilai;
+                    butang.className = 'skor-button min-w-11 min-h-11 px-3 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-black hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer';
+                    butang.setAttribute('aria-label', `Pilih skor ${nilai}`);
+                    butang.setAttribute('aria-pressed', 'false');
+                    butang.onclick = () => pilihSkor(input, kumpulan, butang, nilai);
+                    kumpulan.appendChild(butang);
+                }
+
+                input.insertAdjacentElement('afterend', kumpulan);
+            });
+        }
+
+        function pilihSkor(input, kumpulan, butangDipilih, nilai) {
+            input.value = nilai;
+            kumpulan.querySelectorAll('.skor-button').forEach(butang => {
+                const dipilih = butang === butangDipilih;
+                butang.className = dipilih
+                    ? 'skor-button min-w-11 min-h-11 px-3 py-2 rounded-lg border-2 border-indigo-700 bg-indigo-600 text-white font-black shadow-md scale-105 transition-all cursor-pointer'
+                    : 'skor-button min-w-11 min-h-11 px-3 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-black hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer';
+                butang.setAttribute('aria-pressed', dipilih ? 'true' : 'false');
+            });
+            kiraSkor();
+        }
+
+        function resetPaparanSkor() {
+            document.querySelectorAll('.skor-button').forEach(butang => {
+                butang.className = 'skor-button min-w-11 min-h-11 px-3 py-2 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-black hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer';
+                butang.setAttribute('aria-pressed', 'false');
+            });
+        }
 
         function muatAwalPeserta() {
             fetch(GOOGLE_SCRIPT_URL)
@@ -261,10 +307,6 @@
             });
             if (SENARAI_HAKIM.includes(nilaiSemasa)) selectHakim.value = nilaiSemasa;
 
-            SENARAI_HAKIM.forEach((nama, idx) => {
-                const header = document.getElementById(`header-hakim-${idx + 1}`);
-                if (header) header.textContent = nama;
-            });
         }
 
         function kunciPeserta(peserta) {
@@ -449,6 +491,7 @@
                     confirmButtonColor: '#16a34a'
                 }).then(() => {
                     document.getElementById('borang-markah').reset();
+                    resetPaparanSkor();
                     document.getElementById('select-peserta').value = "";
                     kosongkanMaklumatPeserta();
                     binaDropdownPeserta();
@@ -472,12 +515,13 @@
             })[aksara]);
         }
 
-        function labelAnugerah(kedudukan) {
-            if (kedudukan <= 5) return { nama: 'PLATINUM', kelas: 'bg-slate-800 text-white' };
-            if (kedudukan <= 17) return { nama: 'EMAS', kelas: 'bg-amber-100 text-amber-800' };
-            if (kedudukan <= 32) return { nama: 'PERAK', kelas: 'bg-gray-200 text-gray-700' };
-            if (kedudukan <= 52) return { nama: 'GANGSA', kelas: 'bg-orange-100 text-orange-800' };
-            return { nama: 'TIADA KATEGORI', kelas: 'bg-gray-100 text-gray-500' };
+        function barAnugerah(kedudukan) {
+            if (kedudukan === 1) return { nama: 'ANUGERAH PLATINUM', kelas: 'bg-slate-800 text-white' };
+            if (kedudukan === 6) return { nama: 'ANUGERAH EMAS', kelas: 'bg-amber-400 text-amber-950' };
+            if (kedudukan === 18) return { nama: 'ANUGERAH PERAK', kelas: 'bg-slate-300 text-slate-800' };
+            if (kedudukan === 33) return { nama: 'ANUGERAH GANGSA', kelas: 'bg-orange-500 text-white' };
+            if (kedudukan === 53) return { nama: 'TIADA KATEGORI ANUGERAH', kelas: 'bg-gray-200 text-gray-600' };
+            return null;
         }
 
         function paparanMarkah(nilai) {
@@ -538,10 +582,17 @@
 
                 arrayKeputusan.forEach((item, index) => {
                     const kedudukan = index + 1;
-                    const anugerah = labelAnugerah(kedudukan);
+                    const bar = barAnugerah(kedudukan);
+                    const bilanganHakim = SENARAI_HAKIM.filter(hakim => item.markahHakim[hakim] !== null).length;
                     const status = item.lengkap
-                        ? `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-black ${anugerah.kelas}">${anugerah.nama}</span>`
-                        : `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700">Penghakiman belum lengkap</span>`;
+                        ? `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700">Lengkap (3/3)</span>`
+                        : `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700">Belum lengkap (${bilanganHakim}/3)</span>`;
+
+                    if (bar) {
+                        const trBar = document.createElement('tr');
+                        trBar.innerHTML = `<td colspan="7" class="p-0"><div class="${bar.kelas} px-4 py-3 text-center text-sm font-black tracking-widest shadow-inner">${bar.nama}</div></td>`;
+                        tbody.appendChild(trBar);
+                    }
 
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-gray-50 border-b border-gray-100';
