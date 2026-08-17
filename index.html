@@ -101,11 +101,6 @@
                         <input type="text" id="tajuk" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 font-medium cursor-not-allowed">
                     </div>
 
-                    <!-- Info Tag: Pernah Bertanding -->
-                    <div class="md:col-span-2 flex items-center gap-2 text-xs text-slate-600 bg-slate-100 p-2.5 rounded-lg border border-slate-200">
-                        <span class="font-bold uppercase text-slate-800">Status Pengalaman:</span>
-                        <span id="info-pernah-bertanding" class="font-semibold text-indigo-700">-</span>
-                    </div>
                 </div>
             </div>
 
@@ -396,7 +391,6 @@
             document.getElementById('kategori').value = '';
             document.getElementById('subjek').value = '';
             document.getElementById('tajuk').value = '';
-            document.getElementById('info-pernah-bertanding').textContent = '-';
         }
 
         function pilihPeserta() {
@@ -413,7 +407,6 @@
             document.getElementById('kategori').value = p.kategori || "";
             document.getElementById('subjek').value = p.subjek || "";
             document.getElementById('tajuk').value = p.tajuk || "";
-            document.getElementById('info-pernah-bertanding').textContent = p.pernahBertanding || "Tidak dinyatakan";
             tunjukBorangMarkah(true);
         }
 
