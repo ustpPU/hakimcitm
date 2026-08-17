@@ -7,6 +7,18 @@
     <!-- Tailwind CSS & SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @keyframes awardPulse {
+            0%, 100% { filter: brightness(1); box-shadow: inset 0 0 0 rgba(255, 255, 255, 0); }
+            50% { filter: brightness(1.12); box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.25); }
+        }
+        .award-pulse {
+            animation: awardPulse 3.2s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .award-pulse { animation: none; }
+        }
+    </style>
 </head>
 <body class="bg-slate-50 font-sans min-h-screen pb-12">
 
@@ -207,7 +219,7 @@
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
                                 <th class="p-3 text-center">Kedudukan</th>
-                                <th class="p-3 w-1/4">Calon & Sekolah</th>
+                                <th class="p-3 w-1/4">Nama</th>
                                 <th class="p-3 w-[28%]">Tajuk Inovasi</th>
                                 <th id="header-hakim-1" class="p-3 text-center">Hakim 1</th>
                                 <th id="header-hakim-2" class="p-3 text-center">Hakim 2</th>
@@ -652,7 +664,7 @@
 
                     if (bar) {
                         const trBar = document.createElement('tr');
-                        trBar.innerHTML = `<td colspan="7" class="p-0"><div class="${bar.kelas} px-4 py-3 text-center text-sm font-black tracking-widest shadow-inner">${bar.nama}</div></td>`;
+                        trBar.innerHTML = `<td colspan="7" class="p-0"><div class="award-pulse ${bar.kelas} px-4 py-3 text-center text-sm font-black tracking-widest shadow-inner">${bar.nama}</div></td>`;
                         tbody.appendChild(trBar);
                     }
 
@@ -664,7 +676,7 @@
                             ${status}
                         </td>
                         <td class="p-3 align-top">
-                            <div class="font-bold text-gray-900"><span class="text-indigo-600">${escapeHtml(item.giliran)}.</span> ${escapeHtml(item.namaGuru)}</div>
+                            <div class="font-bold text-gray-900">${escapeHtml(item.namaGuru)}</div>
                             <div class="text-xs text-gray-500">${escapeHtml(item.sekolah)}</div>
                         </td>
                         <td class="p-3 text-[11px] md:text-xs text-gray-700 font-medium leading-relaxed whitespace-normal break-words align-top">${escapeHtml(item.tajuk)}</td>
