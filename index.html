@@ -18,8 +18,15 @@
         .award-pulse {
             animation: awardPulse 3.2s ease-in-out infinite;
         }
+        @keyframes formExpand {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-expand {
+            animation: formExpand 0.35s ease-out both;
+        }
         @media (prefers-reduced-motion: reduce) {
-            .award-pulse { animation: none; }
+            .award-pulse, .form-expand { animation: none; }
         }
     </style>
 </head>
@@ -103,7 +110,7 @@
             </div>
 
             <!-- Rubrik Pemarkahan -->
-            <form id="borang-markah" class="space-y-6">
+            <form id="borang-markah" class="hidden space-y-6" aria-hidden="true">
                 
                 <!-- A. KESESUAIAN IDEA / INOVASI (25%) -->
                 <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -379,6 +386,8 @@
         function pilihHakim() {
             document.getElementById('select-peserta').value = '';
             kosongkanMaklumatPeserta();
+            resetMarkahBelumHantar();
+            tunjukBorangMarkah(false);
             binaDropdownPeserta();
         }
 
@@ -392,8 +401,10 @@
 
         function pilihPeserta() {
             const idx = document.getElementById('select-peserta').value;
+            resetMarkahBelumHantar();
             if (idx === "") {
                 kosongkanMaklumatPeserta();
+                tunjukBorangMarkah(false);
                 return;
             }
 
@@ -403,6 +414,25 @@
             document.getElementById('subjek').value = p.subjek || "";
             document.getElementById('tajuk').value = p.tajuk || "";
             document.getElementById('info-pernah-bertanding').textContent = p.pernahBertanding || "Tidak dinyatakan";
+            tunjukBorangMarkah(true);
+        }
+
+        function resetMarkahBelumHantar() {
+            document.querySelectorAll('.skor-input').forEach(input => { input.value = ''; });
+            document.getElementById('catatan').value = '';
+            resetPaparanSkor();
+            kiraSkor();
+        }
+
+        function tunjukBorangMarkah(tunjuk) {
+            const borang = document.getElementById('borang-markah');
+            borang.classList.toggle('hidden', !tunjuk);
+            borang.setAttribute('aria-hidden', tunjuk ? 'false' : 'true');
+            if (tunjuk) {
+                borang.classList.remove('form-expand');
+                void borang.offsetWidth;
+                borang.classList.add('form-expand');
+            }
         }
 
         function tukarTab(tab) {
@@ -416,6 +446,10 @@
                 tabJumlah.className = "hidden";
                 btnPengisian.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-indigo-600 text-white border-2 border-indigo-600";
                 btnJumlah.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold shadow bg-white text-gray-700 border-2 border-gray-200";
+                document.getElementById('select-peserta').value = '';
+                kosongkanMaklumatPeserta();
+                resetMarkahBelumHantar();
+                tunjukBorangMarkah(false);
             } else {
                 tabPengisian.className = "hidden";
                 tabJumlah.className = "block space-y-6";
