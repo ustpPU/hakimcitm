@@ -167,14 +167,20 @@
                 </div>
 
                 <!-- Action Bar -->
-                <div class="bg-gray-900 text-white p-4 rounded-xl flex justify-between items-center shadow-md">
+                <div class="bg-gray-900 text-white p-4 rounded-xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 shadow-md">
                     <div>
                         <span class="text-xs text-gray-400 font-bold block">JUMLAH SKOR KESELURUHAN</span>
                         <span id="live-total" class="text-3xl font-black text-amber-400">0 <span class="text-sm font-normal text-white">/ 100</span></span>
+                        <span id="kemajuan-skor" class="text-xs text-gray-300 font-semibold block mt-1">0 daripada 20 kriteria telah diisi</span>
                     </div>
-                    <button type="button" onclick="hantarMarkah()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center gap-2 shadow-lg">
-                        ☁️ Simpan Markah
-                    </button>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="kosongkanSemuaMarkah()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer shadow">
+                            🗑️ Kosongkan Semua Markah
+                        </button>
+                        <button type="button" onclick="hantarMarkah()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center gap-2 shadow-lg">
+                            ☁️ Simpan Markah
+                        </button>
+                    </div>
                 </div>
             </form>
         </section>
@@ -192,13 +198,17 @@
                     </button>
                 </div>
 
+                <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold leading-relaxed text-amber-900">
+                    ℹ️ Ranking sementara disusun berdasarkan jumlah markah semasa yang telah diterima. Kedudukan boleh berubah sehingga ketiga-tiga hakim selesai menilai semua peserta.
+                </div>
+
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table class="w-full min-w-[800px] table-fixed text-left text-sm">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
                                 <th class="p-3 text-center">Kedudukan</th>
                                 <th class="p-3 w-1/4">Calon & Sekolah</th>
-                                <th class="p-3 w-1/4">Tajuk Inovasi</th>
+                                <th class="p-3 w-[28%]">Tajuk Inovasi</th>
                                 <th id="header-hakim-1" class="p-3 text-center">Hakim 1</th>
                                 <th id="header-hakim-2" class="p-3 text-center">Hakim 2</th>
                                 <th id="header-hakim-3" class="p-3 text-center">Hakim 3</th>
@@ -399,16 +409,40 @@
         function kiraSkor() {
             const inputs = document.querySelectorAll('.skor-input');
             let grandTotal = 0;
+            let bilanganDiisi = 0;
 
             inputs.forEach(input => {
                 let val = parseFloat(input.value) || 0;
                 if (val > 5) { input.value = 5; val = 5; }
                 if (val < 0) { input.value = 0; val = 0; }
+                if (input.value !== '' && val >= 1 && val <= 5) bilanganDiisi++;
                 grandTotal += val;
             });
 
             document.getElementById('live-total').innerHTML = grandTotal + ` <span class="text-sm font-normal text-white">/ 100</span>`;
+            document.getElementById('kemajuan-skor').textContent = `${bilanganDiisi} daripada ${inputs.length} kriteria telah diisi`;
             return grandTotal;
+        }
+
+        function kosongkanSemuaMarkah() {
+            const adaMarkah = Array.from(document.querySelectorAll('.skor-input')).some(input => input.value !== '');
+            if (!adaMarkah && !document.getElementById('catatan').value.trim()) return;
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Kosongkan Semua Markah?',
+                text: 'Semua pilihan skor dan catatan yang belum dihantar akan dipadam.',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Kosongkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc2626'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                document.querySelectorAll('.skor-input').forEach(input => { input.value = ''; });
+                document.getElementById('catatan').value = '';
+                resetPaparanSkor();
+                kiraSkor();
+            });
         }
 
         function hantarMarkah() {
@@ -464,6 +498,28 @@
                 jumlah: kiraSkor(),
                 catatan: catatan
             };
+
+            Swal.fire({
+                icon: 'question',
+                title: 'Sahkan Penghantaran Markah',
+                html: `
+                    <div class="text-left text-sm space-y-3 rounded-xl bg-gray-50 p-4">
+                        <div><span class="font-bold text-gray-500">Hakim:</span><br><span class="font-bold text-indigo-900">${escapeHtml(hakim)}</span></div>
+                        <div><span class="font-bold text-gray-500">Peserta:</span><br><span class="font-bold text-gray-900">${escapeHtml(peserta.giliran)}. ${escapeHtml(peserta.namaGuru)}</span></div>
+                        <div><span class="font-bold text-gray-500">Jumlah Markah:</span><br><span class="text-3xl font-black text-emerald-700">${payload.jumlah} / 100</span></div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hantar Markah',
+                cancelButtonText: 'Semak Semula',
+                confirmButtonColor: '#16a34a',
+                reverseButtons: true
+            }).then(result => {
+                if (result.isConfirmed) simpanMarkahKeCloud(payload, peserta, hakim);
+            });
+        }
+
+        function simpanMarkahKeCloud(payload, peserta, hakim) {
 
             Swal.fire({
                 title: 'Menghantar Markah...',
@@ -611,7 +667,7 @@
                             <div class="font-bold text-gray-900"><span class="text-indigo-600">${escapeHtml(item.giliran)}.</span> ${escapeHtml(item.namaGuru)}</div>
                             <div class="text-xs text-gray-500">${escapeHtml(item.sekolah)}</div>
                         </td>
-                        <td class="p-3 text-xs text-gray-700 font-medium align-top">${escapeHtml(item.tajuk)}</td>
+                        <td class="p-3 text-[11px] md:text-xs text-gray-700 font-medium leading-relaxed whitespace-normal break-words align-top">${escapeHtml(item.tajuk)}</td>
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[0]])}</td>
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[1]])}</td>
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[2]])}</td>
