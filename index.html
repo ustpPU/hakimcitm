@@ -315,10 +315,12 @@
 
         function sudahDinilai(hakim, peserta) {
             if (!hakim) return false;
-            const kunci = kunciPeserta(peserta);
             return rekodMarkahGlobal.some(item =>
                 item.hakim === hakim &&
-                String(item.giliran || item.namaGuru || '').trim() === kunci
+                (
+                    (item.giliran && peserta.giliran && String(item.giliran).trim() === String(peserta.giliran).trim()) ||
+                    String(item.namaGuru || '').trim() === String(peserta.namaGuru || '').trim()
+                )
             );
         }
 
@@ -546,10 +548,11 @@
                 binaDropdownPeserta();
 
                 const keputusan = new Map();
+                const keputusanNama = new Map();
                 senaraiPesertaGlobal.forEach(peserta => {
                     const markahHakim = {};
                     SENARAI_HAKIM.forEach(hakim => markahHakim[hakim] = null);
-                    keputusan.set(kunciPeserta(peserta), {
+                    const dataPeserta = {
                         giliran: peserta.giliran,
                         namaGuru: peserta.namaGuru,
                         sekolah: peserta.sekolah,
@@ -557,12 +560,15 @@
                         markahHakim: markahHakim,
                         jumlahKeseluruhan: 0,
                         lengkap: false
-                    });
+                    };
+                    keputusan.set(kunciPeserta(peserta), dataPeserta);
+                    keputusanNama.set(String(peserta.namaGuru || '').trim(), dataPeserta);
                 });
 
                 rekodMarkahGlobal.forEach(rekod => {
-                    const kunci = String(rekod.giliran || rekod.namaGuru || '').trim();
-                    const peserta = keputusan.get(kunci);
+                    const kunciGiliran = String(rekod.giliran || '').trim();
+                    const kunciNama = String(rekod.namaGuru || '').trim();
+                    const peserta = (kunciGiliran && keputusan.get(kunciGiliran)) || keputusanNama.get(kunciNama);
                     if (peserta && SENARAI_HAKIM.includes(rekod.hakim)) {
                         peserta.markahHakim[rekod.hakim] = Number(rekod.jumlah) || 0;
                     }
