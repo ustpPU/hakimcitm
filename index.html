@@ -281,7 +281,7 @@
         }
 
         function muatAwalPeserta() {
-            fetch(GOOGLE_SCRIPT_URL)
+            fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 senaraiPesertaGlobal = data.participants || [];
@@ -538,7 +538,7 @@
             loading.className = 'text-center py-8 text-gray-400 text-sm';
             loading.textContent = 'Sedang mengambil data dari Cloud...';
 
-            fetch(GOOGLE_SCRIPT_URL)
+            fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(resData => {
                 senaraiPesertaGlobal = resData.participants || [];
