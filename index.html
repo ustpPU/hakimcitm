@@ -39,7 +39,7 @@
                     <!-- Dropdown Hakim -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nama Hakim / Penilai *</label>
-                        <select id="nama-hakim" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
+                        <select id="nama-hakim" onchange="pilihHakim()" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
                             <option value="">-- Pilih Hakim --</option>
                             <option value="Hakim 1">Hakim 1</option>
                             <option value="Hakim 2">Hakim 2</option>
@@ -70,7 +70,7 @@
                     <!-- Input Manual: Mata Pelajaran -->
                     <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Mata Pelajaran & Tahun / Tingkatan *</label>
-                        <input type="text" id="subjek" placeholder="Contoh: Sains (Tahun 5)" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none">
+                        <input type="text" id="subjek" readonly placeholder="Diisi automatik..." class="w-full p-2.5 border rounded-lg text-sm bg-gray-100 text-gray-700 cursor-not-allowed">
                     </div>
 
                     <!-- Auto-filled: Tajuk Inovasi -->
@@ -196,11 +196,12 @@
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
+                                <th class="p-3 text-center">Kedudukan / Anugerah</th>
                                 <th class="p-3 w-1/4">Calon & Sekolah</th>
                                 <th class="p-3 w-1/4">Tajuk Inovasi</th>
-                                <th class="p-3 text-center">Hakim 1</th>
-                                <th class="p-3 text-center">Hakim 2</th>
-                                <th class="p-3 text-center">Hakim 3</th>
+                                <th id="header-hakim-1" class="p-3 text-center">Hakim 1</th>
+                                <th id="header-hakim-2" class="p-3 text-center">Hakim 2</th>
+                                <th id="header-hakim-3" class="p-3 text-center">Hakim 3</th>
                                 <th class="p-3 text-right">Jumlah (300)</th>
                             </tr>
                         </thead>
@@ -218,10 +219,16 @@
     </main>
 
     <script>
-        // ⚠️ GANTIKAN DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        // URL ini akan diganti selepas deployment GAS baharu dibuat.
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyotFVCx4SqBXo93JvM-zP2W-aIcsEnP38OZrV-5yLuorhc-tYu8xuSH8c3hGKb-zDfnw/exec";
+        const SENARAI_HAKIM = [
+            "NOOR DIANA BINTI SUHAIMI",
+            "AZRULIZAM BIN AMAT SAYUTI",
+            "NIK HAZIFAH BT. NIK AWANG @ NIK MAT NAWI"
+        ];
 
         let senaraiPesertaGlobal = [];
+        let rekodMarkahGlobal = [];
 
         window.onload = function() {
             muatAwalPeserta();
@@ -231,20 +238,10 @@
             fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(data => {
-                const selectPeserta = document.getElementById('select-peserta');
-                selectPeserta.innerHTML = `<option value="">-- Pilih Nama Guru --</option>`;
-
-                if (data.participants && data.participants.length > 0) {
-                    senaraiPesertaGlobal = data.participants;
-                    data.participants.forEach((p, idx) => {
-                        let opt = document.createElement('option');
-                        opt.value = idx;
-                        opt.textContent = `${p.namaGuru} (${p.sekolah})`;
-                        selectPeserta.appendChild(opt);
-                    });
-                } else {
-                    selectPeserta.innerHTML = `<option value="">⚠️ Tiada data peserta dalam tab SENARAIPESERTA</option>`;
-                }
+                senaraiPesertaGlobal = data.participants || [];
+                rekodMarkahGlobal = data.scores || [];
+                binaDropdownHakim();
+                binaDropdownPeserta();
             })
             .catch(err => {
                 console.error("Gagal muat data peserta:", err);
@@ -252,19 +249,85 @@
             });
         }
 
+        function binaDropdownHakim() {
+            const selectHakim = document.getElementById('nama-hakim');
+            const nilaiSemasa = selectHakim.value;
+            selectHakim.innerHTML = `<option value="">-- Pilih Hakim --</option>`;
+            SENARAI_HAKIM.forEach(nama => {
+                const opt = document.createElement('option');
+                opt.value = nama;
+                opt.textContent = nama;
+                selectHakim.appendChild(opt);
+            });
+            if (SENARAI_HAKIM.includes(nilaiSemasa)) selectHakim.value = nilaiSemasa;
+
+            SENARAI_HAKIM.forEach((nama, idx) => {
+                const header = document.getElementById(`header-hakim-${idx + 1}`);
+                if (header) header.textContent = nama;
+            });
+        }
+
+        function kunciPeserta(peserta) {
+            return String(peserta.giliran || peserta.namaGuru || '').trim();
+        }
+
+        function sudahDinilai(hakim, peserta) {
+            if (!hakim) return false;
+            const kunci = kunciPeserta(peserta);
+            return rekodMarkahGlobal.some(item =>
+                item.hakim === hakim &&
+                String(item.giliran || item.namaGuru || '').trim() === kunci
+            );
+        }
+
+        function binaDropdownPeserta() {
+            const selectPeserta = document.getElementById('select-peserta');
+            const hakim = document.getElementById('nama-hakim').value;
+            selectPeserta.innerHTML = `<option value="">${hakim ? '-- Pilih Nama Guru --' : '-- Pilih Hakim terlebih dahulu --'}</option>`;
+            selectPeserta.disabled = !hakim;
+
+            if (senaraiPesertaGlobal.length === 0) {
+                selectPeserta.innerHTML = `<option value="">⚠️ Tiada data peserta dalam tab SENARAIPESERTA</option>`;
+                return;
+            }
+
+            senaraiPesertaGlobal.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                const telahDinilai = sudahDinilai(hakim, p);
+                const nombor = p.giliran ? `${p.giliran}. ` : '';
+                opt.value = idx;
+                opt.textContent = `${nombor}${p.namaGuru} (${p.sekolah})${telahDinilai ? ' — SUDAH DINILAI' : ''}`;
+                opt.disabled = telahDinilai;
+                if (telahDinilai) opt.className = 'text-gray-400 bg-gray-100';
+                selectPeserta.appendChild(opt);
+            });
+        }
+
+        function pilihHakim() {
+            document.getElementById('select-peserta').value = '';
+            kosongkanMaklumatPeserta();
+            binaDropdownPeserta();
+        }
+
+        function kosongkanMaklumatPeserta() {
+            document.getElementById('sekolah').value = '';
+            document.getElementById('kategori').value = '';
+            document.getElementById('subjek').value = '';
+            document.getElementById('tajuk').value = '';
+            document.getElementById('info-pernah-bertanding').textContent = '-';
+        }
+
         function pilihPeserta() {
             const idx = document.getElementById('select-peserta').value;
             if (idx === "") {
-                document.getElementById('sekolah').value = "";
-                document.getElementById('kategori').value = "";
-                document.getElementById('tajuk').value = "";
-                document.getElementById('info-pernah-bertanding').textContent = "-";
+                kosongkanMaklumatPeserta();
                 return;
             }
 
             const p = senaraiPesertaGlobal[idx];
             document.getElementById('sekolah').value = p.sekolah || "";
             document.getElementById('kategori').value = p.kategori || "";
+            document.getElementById('subjek').value = p.subjek || "";
             document.getElementById('tajuk').value = p.tajuk || "";
             document.getElementById('info-pernah-bertanding').textContent = p.pernahBertanding || "Tidak dinyatakan";
         }
@@ -311,11 +374,28 @@
             const catatan = document.getElementById('catatan').value.trim();
 
             if (!hakim || idxPeserta === "" || !subjek) {
-                Swal.fire({ icon: 'warning', title: 'Maklumat Tidak Lengkap', text: 'Sila pilih Hakim, Nama Guru, dan isi Mata Pelajaran terlebih dahulu!', confirmButtonColor: '#4f46e5' });
+                Swal.fire({ icon: 'warning', title: 'Maklumat Tidak Lengkap', text: 'Sila pilih Hakim dan Nama Guru. Pastikan Mata Pelajaran telah tersedia dalam SENARAIPESERTA.', confirmButtonColor: '#4f46e5' });
                 return;
             }
 
             const peserta = senaraiPesertaGlobal[idxPeserta];
+
+            if (sudahDinilai(hakim, peserta)) {
+                Swal.fire({ icon: 'warning', title: 'Peserta Telah Dinilai', text: `${hakim} telah menghantar markah untuk peserta ini.`, confirmButtonColor: '#4f46e5' });
+                binaDropdownPeserta();
+                return;
+            }
+
+            const semuaSkor = Array.from(document.querySelectorAll('.skor-input'));
+            const skorTidakLengkap = semuaSkor.some(input => {
+                const nilai = Number(input.value);
+                return input.value === '' || nilai < 1 || nilai > 5;
+            });
+
+            if (skorTidakLengkap) {
+                Swal.fire({ icon: 'warning', title: 'Pemarkahan Belum Lengkap', text: 'Sila isi semua item rubrik dengan skor antara 1 hingga 5.', confirmButtonColor: '#4f46e5' });
+                return;
+            }
 
             let cats = { A: 0, B: 0, C: 0, D: 0, E: 0 };
             document.querySelectorAll('.skor-input').forEach(i => {
@@ -325,11 +405,13 @@
 
             const payload = {
                 hakim: hakim,
+                giliran: peserta.giliran,
                 namaGuru: peserta.namaGuru,
                 sekolah: peserta.sekolah,
                 kategori: peserta.kategori,
                 subjek: subjek,
                 tajuk: peserta.tajuk,
+                pernahBertanding: peserta.pernahBertanding || '',
                 skorA: cats.A,
                 skorB: cats.B,
                 skorC: cats.C,
@@ -353,6 +435,12 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
+                rekodMarkahGlobal.push({
+                    hakim: hakim,
+                    giliran: peserta.giliran,
+                    namaGuru: peserta.namaGuru,
+                    jumlah: payload.jumlah
+                });
                 Swal.fire({
                     icon: 'success',
                     title: 'Markah Berjaya Dihantar!',
@@ -362,7 +450,8 @@
                 }).then(() => {
                     document.getElementById('borang-markah').reset();
                     document.getElementById('select-peserta').value = "";
-                    pilihPeserta();
+                    kosongkanMaklumatPeserta();
+                    binaDropdownPeserta();
                     kiraSkor();
                     tukarTab('jumlah');
                 });
@@ -377,80 +466,118 @@
             });
         }
 
+        function escapeHtml(nilai) {
+            return String(nilai ?? '').replace(/[&<>'"]/g, aksara => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            })[aksara]);
+        }
+
+        function labelAnugerah(kedudukan) {
+            if (kedudukan <= 5) return { nama: 'PLATINUM', kelas: 'bg-slate-800 text-white' };
+            if (kedudukan <= 17) return { nama: 'EMAS', kelas: 'bg-amber-100 text-amber-800' };
+            if (kedudukan <= 32) return { nama: 'PERAK', kelas: 'bg-gray-200 text-gray-700' };
+            if (kedudukan <= 52) return { nama: 'GANGSA', kelas: 'bg-orange-100 text-orange-800' };
+            return { nama: 'TIADA KATEGORI', kelas: 'bg-gray-100 text-gray-500' };
+        }
+
+        function paparanMarkah(nilai) {
+            return nilai === null
+                ? `<span class="text-gray-300">-</span>`
+                : `<div class="font-black text-sm text-gray-800">${nilai}</div>`;
+        }
+
         function muatTurunData() {
             const tbody = document.getElementById('jadual-body');
             const loading = document.getElementById('loading-txt');
             tbody.innerHTML = '';
             loading.style.display = 'block';
+            loading.className = 'text-center py-8 text-gray-400 text-sm';
+            loading.textContent = 'Sedang mengambil data dari Cloud...';
 
             fetch(GOOGLE_SCRIPT_URL)
             .then(res => res.json())
             .then(resData => {
-                loading.style.display = 'none';
+                senaraiPesertaGlobal = resData.participants || [];
+                rekodMarkahGlobal = resData.scores || [];
+                binaDropdownPeserta();
 
-                const rawData = resData.scores || [];
-
-                if (rawData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">Tiada rekod markah ditemui.</td></tr>`;
-                    return;
-                }
-
-                // 1. Kumpulkan Data (Grouping) mengikut Nama Guru
-                let senaraiTerkumpul = {};
-                
-                rawData.forEach(item => {
-                    let nama = item.namaGuru;
-                    
-                    if (!senaraiTerkumpul[nama]) {
-                        senaraiTerkumpul[nama] = {
-                            namaGuru: nama,
-                            sekolah: item.sekolah,
-                            tajuk: item.tajuk,
-                            markahHakim: [],
-                            jumlahKeseluruhan: 0
-                        };
-                    }
-                    
-                    senaraiTerkumpul[nama].markahHakim.push({
-                        namaHakim: item.hakim,
-                        markah: parseFloat(item.jumlah) || 0
+                const keputusan = new Map();
+                senaraiPesertaGlobal.forEach(peserta => {
+                    const markahHakim = {};
+                    SENARAI_HAKIM.forEach(hakim => markahHakim[hakim] = null);
+                    keputusan.set(kunciPeserta(peserta), {
+                        giliran: peserta.giliran,
+                        namaGuru: peserta.namaGuru,
+                        sekolah: peserta.sekolah,
+                        tajuk: peserta.tajuk,
+                        markahHakim: markahHakim,
+                        jumlahKeseluruhan: 0,
+                        lengkap: false
                     });
-                    
-                    senaraiTerkumpul[nama].jumlahKeseluruhan += (parseFloat(item.jumlah) || 0);
                 });
 
-                // 2. Susun ikut Jumlah Keseluruhan Tertinggi
-                let arrayKeputusan = Object.values(senaraiTerkumpul);
-                arrayKeputusan.sort((a, b) => b.jumlahKeseluruhan - a.jumlahKeseluruhan);
+                rekodMarkahGlobal.forEach(rekod => {
+                    const kunci = String(rekod.giliran || rekod.namaGuru || '').trim();
+                    const peserta = keputusan.get(kunci);
+                    if (peserta && SENARAI_HAKIM.includes(rekod.hakim)) {
+                        peserta.markahHakim[rekod.hakim] = Number(rekod.jumlah) || 0;
+                    }
+                });
 
-                // 3. Masukkan data ke dalam jadual
-                arrayKeputusan.forEach((item) => {
-                    let h1 = item.markahHakim[0] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[0].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[0].markah}</div>` : `<span class="text-gray-300">-</span>`;
-                    
-                    let h2 = item.markahHakim[1] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[1].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[1].markah}</div>` : `<span class="text-gray-300">-</span>`;
-                    
-                    let h3 = item.markahHakim[2] ? `<div class="text-[10px] font-bold text-indigo-600 truncate w-20 mx-auto">${item.markahHakim[2].namaHakim}</div><div class="font-black text-sm text-gray-800">${item.markahHakim[2].markah}</div>` : `<span class="text-gray-300">-</span>`;
+                const arrayKeputusan = Array.from(keputusan.values());
+                arrayKeputusan.forEach(item => {
+                    const semuaMarkah = SENARAI_HAKIM.map(hakim => item.markahHakim[hakim]);
+                    item.lengkap = semuaMarkah.every(markah => markah !== null);
+                    item.jumlahKeseluruhan = semuaMarkah.reduce((jumlah, markah) => jumlah + (markah || 0), 0);
+                });
 
-                    let tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 border-b border-gray-100";
+                arrayKeputusan.sort((a, b) =>
+                    b.jumlahKeseluruhan - a.jumlahKeseluruhan ||
+                    Number(a.giliran || 9999) - Number(b.giliran || 9999)
+                );
+
+                arrayKeputusan.forEach((item, index) => {
+                    const kedudukan = index + 1;
+                    const anugerah = labelAnugerah(kedudukan);
+                    const status = item.lengkap
+                        ? `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-black ${anugerah.kelas}">${anugerah.nama}</span>`
+                        : `<span class="inline-block mt-1 px-2 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700">Penghakiman belum lengkap</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50 border-b border-gray-100';
                     tr.innerHTML = `
-                        <td class="p-3">
-                            <div class="font-bold text-gray-900">${item.namaGuru}</div>
-                            <div class="text-xs text-gray-500">${item.sekolah}</div>
+                        <td class="p-3 text-center align-top">
+                            <div class="font-black text-lg text-indigo-700">#${kedudukan}</div>
+                            ${status}
                         </td>
-                        <td class="p-3 text-xs text-gray-700 font-medium">${item.tajuk}</td>
-                        <td class="p-2 text-center bg-indigo-50/40 rounded-l-lg border-l border-white">${h1}</td>
-                        <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${h2}</td>
-                        <td class="p-2 text-center bg-indigo-50/40 rounded-r-lg border-l border-white">${h3}</td>
+                        <td class="p-3 align-top">
+                            <div class="font-bold text-gray-900"><span class="text-indigo-600">${escapeHtml(item.giliran)}.</span> ${escapeHtml(item.namaGuru)}</div>
+                            <div class="text-xs text-gray-500">${escapeHtml(item.sekolah)}</div>
+                        </td>
+                        <td class="p-3 text-xs text-gray-700 font-medium align-top">${escapeHtml(item.tajuk)}</td>
+                        <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[0]])}</td>
+                        <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[1]])}</td>
+                        <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[2]])}</td>
                         <td class="p-3 text-right font-black text-emerald-700 text-lg">${item.jumlahKeseluruhan} <span class="text-xs font-normal text-gray-400">/ 300</span></td>
                     `;
                     tbody.appendChild(tr);
                 });
+
+                const lengkapSemua = arrayKeputusan.length > 0 && arrayKeputusan.every(item => item.lengkap);
+                loading.style.display = 'block';
+                loading.className = lengkapSemua
+                    ? 'text-center py-4 text-emerald-700 bg-emerald-50 text-sm font-bold rounded-lg mt-4'
+                    : 'text-center py-4 text-rose-700 bg-rose-50 text-sm font-bold rounded-lg mt-4';
+                loading.textContent = lengkapSemua
+                    ? 'Penghakiman lengkap — ranking dan kategori anugerah adalah muktamad.'
+                    : 'Penghakiman belum lengkap — ranking ini masih sementara dan akan berubah apabila markah baharu diterima.';
             })
             .catch(err => {
-                loading.innerText = "Gagal memuat turun data. Sila semak sambungan internet atau URL Apps Script anda.";
+                console.error('Gagal memuat turun keputusan:', err);
+                loading.textContent = 'Gagal memuat turun data. Sila semak sambungan internet atau URL Apps Script anda.';
             });
         }
     </script>
 </body>
 </html>
+
