@@ -219,7 +219,7 @@
                     ℹ️ Ranking sementara disusun berdasarkan jumlah markah semasa yang telah diterima. Kedudukan boleh berubah sehingga ketiga-tiga hakim selesai menilai semua peserta.
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full min-w-[800px] table-fixed text-left text-sm">
                         <thead>
                             <tr class="bg-gray-100 text-gray-700 text-xs font-bold uppercase">
@@ -236,9 +236,12 @@
                             <!-- Data dimasukkan secara dinamik -->
                         </tbody>
                     </table>
-                    <div id="loading-txt" class="text-center py-8 text-gray-400 text-sm">
-                        Sedang mengambil data dari Cloud...
-                    </div>
+                </div>
+
+                <div id="kad-mobile" class="md:hidden space-y-4"></div>
+
+                <div id="loading-txt" class="text-center py-8 text-gray-400 text-sm">
+                    Sedang mengambil data dari Cloud...
                 </div>
             </div>
         </section>
@@ -636,8 +639,10 @@
 
         function muatTurunData() {
             const tbody = document.getElementById('jadual-body');
+            const kadMobile = document.getElementById('kad-mobile');
             const loading = document.getElementById('loading-txt');
             tbody.innerHTML = '';
+            kadMobile.innerHTML = '';
             loading.style.display = 'block';
             loading.className = 'text-center py-8 text-gray-400 text-sm';
             loading.textContent = 'Sedang mengambil data dari Cloud...';
@@ -700,6 +705,11 @@
                         const trBar = document.createElement('tr');
                         trBar.innerHTML = `<td colspan="7" class="p-0"><div class="award-pulse ${bar.kelas} px-4 py-3 text-center text-sm font-black tracking-widest shadow-inner">${bar.nama}</div></td>`;
                         tbody.appendChild(trBar);
+
+                        const barMobile = document.createElement('div');
+                        barMobile.className = `award-pulse ${bar.kelas} rounded-xl px-4 py-3 text-center text-sm font-black tracking-widest shadow-inner`;
+                        barMobile.textContent = bar.nama;
+                        kadMobile.appendChild(barMobile);
                     }
 
                     const tr = document.createElement('tr');
@@ -717,9 +727,41 @@
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[0]])}</td>
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[1]])}</td>
                         <td class="p-2 text-center bg-indigo-50/40 border-l border-white">${paparanMarkah(item.markahHakim[SENARAI_HAKIM[2]])}</td>
-                        <td class="p-3 text-right font-black text-emerald-700 text-lg">${item.jumlahKeseluruhan} <span class="text-xs font-normal text-gray-400">/ 300</span></td>
+                        <td class="p-3 text-right font-black text-emerald-700 text-lg">${item.jumlahKeseluruhan}</td>
                     `;
                     tbody.appendChild(tr);
+
+                    const kad = document.createElement('article');
+                    kad.className = 'overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm';
+                    kad.innerHTML = `
+                        <div class="flex items-start gap-3 p-4">
+                            <div class="w-20 shrink-0 text-center">
+                                <div class="text-2xl font-black text-indigo-700">#${kedudukan}</div>
+                                ${status}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="break-words text-sm font-black leading-snug text-gray-900">${escapeHtml(item.namaGuru)}</div>
+                                <div class="mt-1 break-words text-xs font-medium text-gray-500">${escapeHtml(item.sekolah)}</div>
+                            </div>
+                            <div class="shrink-0 rounded-xl bg-emerald-50 px-3 py-2 text-center">
+                                <div class="text-[9px] font-bold uppercase tracking-wide text-emerald-700">Jumlah</div>
+                                <div class="text-xl font-black text-emerald-700">${item.jumlahKeseluruhan}</div>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-100 bg-gray-50 px-4 py-3">
+                            <div class="mb-1 text-[9px] font-black uppercase tracking-wider text-gray-400">Tajuk Inovasi</div>
+                            <div class="break-words text-xs font-semibold leading-relaxed text-gray-700">${escapeHtml(item.tajuk) || '-'}</div>
+                        </div>
+                        <div class="grid grid-cols-3 border-t border-gray-100">
+                            ${SENARAI_HAKIM.map((hakim, idx) => `
+                                <div class="border-r border-gray-100 p-3 text-center last:border-r-0">
+                                    <div class="text-[9px] font-bold uppercase text-gray-400">Hakim ${idx + 1}</div>
+                                    <div class="mt-1 text-lg font-black text-gray-800">${item.markahHakim[hakim] === null ? '-' : item.markahHakim[hakim]}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    kadMobile.appendChild(kad);
                 });
 
                 const lengkapSemua = arrayKeputusan.length > 0 && arrayKeputusan.every(item => item.lengkap);
