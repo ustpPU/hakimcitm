@@ -56,23 +56,26 @@
             <!-- Maklumat Peserta & Hakim -->
             <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100 space-y-4">
                 <h2 class="text-md font-bold text-indigo-900 border-b pb-2">1. Pilih Hakim & Peserta</h2>
+
+                <div id="status-muat-awal" class="flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs font-bold text-indigo-800">
+                    <span id="ikon-muat-awal" class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-700" aria-hidden="true"></span>
+                    <span id="teks-muat-awal" class="flex-1">Sedang menyediakan borang dan memuatkan data...</span>
+                    <button id="btn-cuba-semula" type="button" onclick="muatAwalPeserta()" class="hidden rounded-lg bg-indigo-700 px-3 py-1.5 text-white hover:bg-indigo-800 cursor-pointer">Cuba Semula</button>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Dropdown Hakim -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nama Hakim / Penilai *</label>
-                        <select id="nama-hakim" onchange="pilihHakim()" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
-                            <option value="">-- Pilih Hakim --</option>
-                            <option value="Hakim 1">Hakim 1</option>
-                            <option value="Hakim 2">Hakim 2</option>
-                            <option value="Hakim 3">Hakim 3</option>
+                        <select id="nama-hakim" onchange="pilihHakim()" disabled class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900 disabled:cursor-wait disabled:opacity-60">
+                            <option value="">-- Sedang menyediakan senarai hakim... --</option>
                         </select>
                     </div>
 
                     <!-- Dropdown Peserta -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Pilih Nama Guru (Peserta) *</label>
-                        <select id="select-peserta" onchange="pilihPeserta()" class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900">
+                        <select id="select-peserta" onchange="pilihPeserta()" disabled class="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none font-semibold text-indigo-900 disabled:cursor-wait disabled:opacity-60">
                             <option value="">-- Sedang memuatkan senarai peserta... --</option>
                         </select>
                     </div>
@@ -315,18 +318,59 @@
         }
 
         function muatAwalPeserta() {
+            const selectHakim = document.getElementById('nama-hakim');
+            const selectPeserta = document.getElementById('select-peserta');
+            selectHakim.disabled = true;
+            selectPeserta.disabled = true;
+            selectHakim.innerHTML = `<option value="">-- Sedang menyediakan senarai hakim... --</option>`;
+            selectPeserta.innerHTML = `<option value="">-- Sedang memuatkan senarai peserta... --</option>`;
+            tetapkanStatusMuatAwal('loading', 'Sedang menyediakan borang dan memuatkan data...');
+
             fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`, { cache: 'no-store' })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
             .then(data => {
+                if (!Array.isArray(data.participants) || data.participants.length === 0) {
+                    throw new Error('Senarai peserta belum tersedia.');
+                }
                 senaraiPesertaGlobal = data.participants || [];
                 rekodMarkahGlobal = data.scores || [];
                 binaDropdownHakim();
+                selectHakim.disabled = false;
                 binaDropdownPeserta();
+                tetapkanStatusMuatAwal('success', `Borang sedia digunakan — ${senaraiPesertaGlobal.length} peserta berjaya dimuatkan.`);
             })
             .catch(err => {
                 console.error("Gagal muat data peserta:", err);
-                document.getElementById('select-peserta').innerHTML = `<option value="">Gagal muat data. Semak sambungan internet.</option>`;
+                selectHakim.innerHTML = `<option value="">-- Data belum berjaya dimuatkan --</option>`;
+                selectPeserta.innerHTML = `<option value="">-- Data belum berjaya dimuatkan --</option>`;
+                tetapkanStatusMuatAwal('error', 'Data belum berjaya dimuatkan. Semak sambungan internet dan cuba semula.');
             });
+        }
+
+        function tetapkanStatusMuatAwal(jenis, mesej) {
+            const status = document.getElementById('status-muat-awal');
+            const ikon = document.getElementById('ikon-muat-awal');
+            const teks = document.getElementById('teks-muat-awal');
+            const butang = document.getElementById('btn-cuba-semula');
+            teks.textContent = mesej;
+            butang.classList.toggle('hidden', jenis !== 'error');
+
+            if (jenis === 'success') {
+                status.className = 'flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800';
+                ikon.className = 'inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white';
+                ikon.textContent = '✓';
+            } else if (jenis === 'error') {
+                status.className = 'flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-bold text-rose-800';
+                ikon.className = 'inline-flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] text-white';
+                ikon.textContent = '!';
+            } else {
+                status.className = 'flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-xs font-bold text-indigo-800';
+                ikon.className = 'inline-block h-4 w-4 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-700';
+                ikon.textContent = '';
+            }
         }
 
         function binaDropdownHakim() {
