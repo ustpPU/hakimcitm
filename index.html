@@ -266,6 +266,7 @@
 
         let senaraiPesertaGlobal = [];
         let rekodMarkahGlobal = [];
+        let pemasaSorokStatusMuat;
 
         window.onload = function() {
             binaButangSkor();
@@ -355,13 +356,19 @@
             const ikon = document.getElementById('ikon-muat-awal');
             const teks = document.getElementById('teks-muat-awal');
             const butang = document.getElementById('btn-cuba-semula');
+            clearTimeout(pemasaSorokStatusMuat);
+            status.classList.remove('hidden', 'opacity-0', '-translate-y-1');
             teks.textContent = mesej;
             butang.classList.toggle('hidden', jenis !== 'error');
 
             if (jenis === 'success') {
-                status.className = 'flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800';
+                status.className = 'flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 transition-all duration-700 ease-out';
                 ikon.className = 'inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] text-white';
                 ikon.textContent = '✓';
+                pemasaSorokStatusMuat = setTimeout(() => {
+                    status.classList.add('opacity-0', '-translate-y-1');
+                    setTimeout(() => status.classList.add('hidden'), 700);
+                }, 1800);
             } else if (jenis === 'error') {
                 status.className = 'flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-bold text-rose-800';
                 ikon.className = 'inline-flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] text-white';
