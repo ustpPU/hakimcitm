@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senarai Pemenang | CITM PUICE 2026</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/fYY58Rh2/JATA-NEGARA-PNG.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/fYY58Rh2/JATA-NEGARA-PNG.png">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @keyframes awardGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.08); }
+        }
+        .award-glow { animation: awardGlow 3.2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+            .award-glow, .animate-spin { animation: none !important; }
+        }
+        @media print {
+            body { background: white !important; padding-bottom: 0 !important; }
+            .no-print { display: none !important; }
+            .award-glow { animation: none !important; }
+            .award-section { break-inside: avoid; box-shadow: none !important; }
+            footer { position: static !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900">
+    <header class="bg-indigo-950 px-4 py-7 text-center text-white shadow-md">
+        <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-indigo-200">Kementerian Pendidikan | PPD Petaling Utama</p>
+        <h1 class="text-xl font-black tracking-wide sm:text-2xl">CETUSAN INSPIRASI TIGA MINIT</h1>
+        <p class="mt-1 text-sm font-bold tracking-[0.2em] text-indigo-200">PUICE 2026</p>
+    </header>
+
+    <main class="mx-auto max-w-4xl space-y-5 px-4 py-6 sm:px-6">
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">Keputusan Rasmi Pertandingan</p>
+                    <h2 class="mt-1 text-2xl font-black text-indigo-950">Senarai Pemenang</h2>
+                    <p id="masa-kemas-kini" class="mt-1 text-xs font-medium text-slate-400">Sedang mendapatkan data terkini...</p>
+                </div>
+                <div class="no-print flex gap-2">
+                    <button type="button" onclick="muatPemenang()" class="rounded-xl bg-indigo-50 px-4 py-2.5 text-xs font-black text-indigo-700 transition hover:bg-indigo-100 cursor-pointer">↻ Muat Semula</button>
+                    <button type="button" onclick="window.print()" class="rounded-xl bg-indigo-700 px-4 py-2.5 text-xs font-black text-white transition hover:bg-indigo-800 cursor-pointer">Cetak</button>
+                </div>
+            </div>
+
+            <div id="status-keputusan" class="mt-5 flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-800">
+                <span class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-700"></span>
+                <span>Sedang menyusun senarai pemenang...</span>
+            </div>
+        </section>
+
+        <div id="senarai-anugerah" class="space-y-5"></div>
+
+        <section id="ralat-data" class="hidden rounded-2xl border border-rose-200 bg-rose-50 p-5 text-center text-sm font-bold text-rose-800">
+            <p id="mesej-ralat">Data belum berjaya dimuatkan.</p>
+            <button type="button" onclick="muatPemenang()" class="no-print mt-3 rounded-lg bg-rose-700 px-4 py-2 text-xs font-black text-white hover:bg-rose-800 cursor-pointer">Cuba Semula</button>
+        </section>
+    </main>
+
+    <footer class="fixed inset-x-0 bottom-0 z-50 border-t border-white/50 bg-white/70 px-4 py-3 text-center text-[11px] font-semibold text-indigo-950 shadow-[0_-4px_18px_rgba(15,23,42,0.08)] backdrop-blur-md sm:text-xs">
+        © Unit Sumber Teknologi Pendidikan PPDPU | PUICE 2026
+    </footer>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyotFVCx4SqBXo93JvM-zP2W-aIcsEnP38OZrV-5yLuorhc-tYu8xuSH8c3hGKb-zDfnw/exec';
+        const SENARAI_HAKIM = [
+            'NOOR DIANA BINTI SUHAIMI',
+            'AZRULIZAM BIN AMAT SAYUTI',
+            'NIK HAZIFAH BT. NIK AWANG @ NIK MAT NAWI'
+        ];
+        const KUMPULAN_ANUGERAH = [
+            { nama: 'ANUGERAH PLATINUM', mula: 1, akhir: 5, bar: 'bg-slate-800 text-white', nombor: 'bg-slate-800 text-white' },
+            { nama: 'ANUGERAH EMAS', mula: 6, akhir: 17, bar: 'bg-amber-400 text-amber-950', nombor: 'bg-amber-100 text-amber-800' },
+            { nama: 'ANUGERAH PERAK', mula: 18, akhir: 32, bar: 'bg-slate-300 text-slate-800', nombor: 'bg-slate-200 text-slate-700' },
+            { nama: 'ANUGERAH GANGSA', mula: 33, akhir: 52, bar: 'bg-orange-500 text-white', nombor: 'bg-orange-100 text-orange-800' }
+        ];
+
+        window.addEventListener('load', muatPemenang);
+
+        function escapeHtml(nilai) {
+            return String(nilai == null ? '' : nilai)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function pecahNomborGiliran(giliran) {
+            const teks = String(giliran || '').trim().toUpperCase();
+            const padanan = teks.match(/^([MR])\s*0*(\d+)$/);
+            if (!padanan) return { sah: false, teks };
+            return {
+                sah: true,
+                nombor: Number(padanan[2]),
+                keutamaan: padanan[1] === 'M' ? 0 : 1
+            };
+        }
+
+        function bandingNomborGiliran(giliranA, giliranB) {
+            const a = pecahNomborGiliran(giliranA);
+            const b = pecahNomborGiliran(giliranB);
+            if (a.sah && b.sah) return a.nombor - b.nombor || a.keutamaan - b.keutamaan;
+            if (a.sah) return -1;
+            if (b.sah) return 1;
+            return a.teks.localeCompare(b.teks, 'ms', { numeric: true });
+        }
+
+        function binaKeputusan(participants, scores) {
+            const keputusan = new Map();
+            const keputusanNama = new Map();
+            const senarai = [];
+
+            participants.forEach(peserta => {
+                const markahHakim = {};
+                SENARAI_HAKIM.forEach(hakim => markahHakim[hakim] = null);
+                const item = {
+                    giliran: String(peserta.giliran || '').trim(),
+                    namaGuru: peserta.namaGuru || '',
+                    sekolah: peserta.sekolah || '',
+                    markahHakim,
+                    jumlahKeseluruhan: 0,
+                    lengkap: false
+                };
+                if (item.giliran) keputusan.set(item.giliran, item);
+                keputusanNama.set(String(item.namaGuru).trim(), item);
+                senarai.push(item);
+            });
+
+            scores.forEach(rekod => {
+                const giliran = String(rekod.giliran || '').trim();
+                const nama = String(rekod.namaGuru || '').trim();
+                const peserta = (giliran && keputusan.get(giliran)) || keputusanNama.get(nama);
+                if (peserta && SENARAI_HAKIM.includes(rekod.hakim)) {
+                    peserta.markahHakim[rekod.hakim] = Number(rekod.jumlah) || 0;
+                }
+            });
+
+            return senarai
+                .map(item => {
+                    const markah = SENARAI_HAKIM.map(hakim => item.markahHakim[hakim]);
+                    item.lengkap = markah.every(nilai => nilai !== null);
+                    item.jumlahKeseluruhan = markah.reduce((jumlah, nilai) => jumlah + (nilai || 0), 0);
+                    return item;
+                })
+                .sort((a, b) =>
+                    b.jumlahKeseluruhan - a.jumlahKeseluruhan ||
+                    bandingNomborGiliran(a.giliran, b.giliran)
+                );
+        }
+
+        function paparkanPemenang(keputusan) {
+            const bekas = document.getElementById('senarai-anugerah');
+            bekas.innerHTML = '';
+
+            KUMPULAN_ANUGERAH.forEach(anugerah => {
+                const pemenang = keputusan.slice(anugerah.mula - 1, Math.min(anugerah.akhir, keputusan.length));
+                if (pemenang.length === 0) return;
+
+                const seksyen = document.createElement('section');
+                seksyen.className = 'award-section overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm';
+                seksyen.innerHTML = `
+                    <div class="award-glow ${anugerah.bar} px-5 py-4 text-center text-sm font-black tracking-[0.18em] shadow-inner">
+                        ${anugerah.nama}
+                    </div>
+                    <ol class="divide-y divide-slate-100">
+                        ${pemenang.map((item, index) => {
+                            const kedudukan = anugerah.mula + index;
+                            return `
+                                <li class="flex items-center gap-4 px-4 py-4 sm:px-6">
+                                    <span class="${anugerah.nombor} flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-black">#${kedudukan}</span>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="break-words text-sm font-black leading-snug text-slate-900 sm:text-base">${escapeHtml(item.namaGuru)}</div>
+                                        <div class="mt-1 break-words text-xs font-semibold text-slate-500 sm:text-sm">${escapeHtml(item.sekolah)}</div>
+                                    </div>
+                                </li>
+                            `;
+                        }).join('')}
+                    </ol>
+                `;
+                bekas.appendChild(seksyen);
+            });
+        }
+
+        function kemasKiniStatus(keputusan) {
+            const status = document.getElementById('status-keputusan');
+            const lengkap = keputusan.length > 0 && keputusan.every(item => item.lengkap);
+            const selesai = keputusan.filter(item => item.lengkap).length;
+
+            if (lengkap) {
+                status.className = 'mt-5 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800';
+                status.innerHTML = '<span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">✓</span><span>Penghakiman lengkap — keputusan pemenang telah dimuktamadkan.</span>';
+            } else {
+                status.className = 'mt-5 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900';
+                status.innerHTML = `<span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs text-white">!</span><span>Senarai pemenang masih sementara — ${selesai} daripada ${keputusan.length} peserta telah dinilai lengkap.</span>`;
+            }
+        }
+
+        function muatPemenang() {
+            const bekas = document.getElementById('senarai-anugerah');
+            const ralat = document.getElementById('ralat-data');
+            const status = document.getElementById('status-keputusan');
+            bekas.innerHTML = '';
+            ralat.classList.add('hidden');
+            status.className = 'mt-5 flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-800';
+            status.innerHTML = '<span class="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-700"></span><span>Sedang menyusun senarai pemenang...</span>';
+
+            fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`, { cache: 'no-store' })
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.json();
+                })
+                .then(data => {
+                    if (!Array.isArray(data.participants) || data.participants.length === 0) {
+                        throw new Error('Senarai peserta belum tersedia.');
+                    }
+                    const keputusan = binaKeputusan(data.participants, Array.isArray(data.scores) ? data.scores : []);
+                    paparkanPemenang(keputusan.slice(0, 52));
+                    kemasKiniStatus(keputusan);
+                    document.getElementById('masa-kemas-kini').textContent = `Dikemas kini: ${new Intl.DateTimeFormat('ms-MY', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}`;
+                })
+                .catch(error => {
+                    console.error('Gagal memuatkan senarai pemenang:', error);
+                    status.classList.add('hidden');
+                    ralat.classList.remove('hidden');
+                    document.getElementById('mesej-ralat').textContent = 'Data belum berjaya dimuatkan. Semak sambungan internet dan cuba semula.';
+                    document.getElementById('masa-kemas-kini').textContent = 'Data belum berjaya dikemas kini.';
+                });
+        }
+    </script>
+</body>
+</html>
