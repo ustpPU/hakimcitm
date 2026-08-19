@@ -398,6 +398,29 @@
             return String(peserta.giliran || peserta.namaGuru || '').trim();
         }
 
+        function pecahNomborGiliran(giliran) {
+            const teks = String(giliran || '').trim().toUpperCase();
+            const padanan = teks.match(/^([MR])\s*0*(\d+)$/);
+            if (!padanan) return { sah: false, teks };
+            return {
+                sah: true,
+                nombor: Number(padanan[2]),
+                kategori: padanan[1],
+                keutamaan: padanan[1] === 'M' ? 0 : 1
+            };
+        }
+
+        function bandingNomborGiliran(giliranA, giliranB) {
+            const a = pecahNomborGiliran(giliranA);
+            const b = pecahNomborGiliran(giliranB);
+            if (a.sah && b.sah) {
+                return a.nombor - b.nombor || a.keutamaan - b.keutamaan;
+            }
+            if (a.sah) return -1;
+            if (b.sah) return 1;
+            return a.teks.localeCompare(b.teks, 'ms', { numeric: true });
+        }
+
         function sudahDinilai(hakim, peserta) {
             if (!hakim) return false;
             return rekodMarkahGlobal.some(item =>
@@ -420,7 +443,10 @@
                 return;
             }
 
-            senaraiPesertaGlobal.forEach((p, idx) => {
+            senaraiPesertaGlobal
+            .map((p, idx) => ({ p, idx }))
+            .sort((a, b) => bandingNomborGiliran(a.p.giliran, b.p.giliran))
+            .forEach(({ p, idx }) => {
                 const opt = document.createElement('option');
                 const telahDinilai = sudahDinilai(hakim, p);
                 const nombor = p.giliran ? `${p.giliran}. ` : '';
@@ -741,7 +767,7 @@
 
                 arrayKeputusan.sort((a, b) =>
                     b.jumlahKeseluruhan - a.jumlahKeseluruhan ||
-                    Number(a.giliran || 9999) - Number(b.giliran || 9999)
+                    bandingNomborGiliran(a.giliran, b.giliran)
                 );
 
                 arrayKeputusan.forEach((item, index) => {
